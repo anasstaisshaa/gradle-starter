@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+java {
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation('org.springframework:spring-core:5.3.20')
+    compileOnly('jakarta.servlet:jakarta.servlet-api:5.0.0')
+
+}
+
+
+configurations.runtimeClasspath.files.each { println it }
+
+jar {
+    def jars = configurations.runtimeClasspath.files.collect { "lib/$it.name" }
+
+    manifest {
+        attributes 'Main-Class': 'Main',
+                'Class-Path': jars.join(' ')
+    }
+//    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+//    from (configurations.runtimeClasspath.files.collect {zipTree(it)} )
+}
+
+task copyAllDependecies(type: Copy) {
+    from(configurations.runtimeClasspath.files)
+    into("$buildDir/libs/lib")
+}
+
+jar.dependsOn copyAllDependecies
+
+
+test {
+    useJUnitPlatform()
+}
+
